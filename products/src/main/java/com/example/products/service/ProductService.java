@@ -1,5 +1,6 @@
 package com.example.products.service;
 
+import com.example.products.exception.ResourceNotFoundException;
 import com.example.products.model.Category;
 import com.example.products.model.Product;
 import com.example.products.repository.CategoryRepository;
@@ -28,24 +29,43 @@ public class ProductService {
         return repo.findById(id);
     }
 
-    public Product save(Product product, Long id){
-        Category category = repoCategory.findById(id).orElseThrow(
-
+    public Product save(Product product, Long categoryid){
+        Category category = repoCategory.findById(categoryid).
+        orElseThrow(
+            ()->
+                 new ResourceNotFoundException("Category not found with id:"
+                 +categoryid)
         );
         product.setCategory(category);
         return repo.save(product);
     }
 
-    public Optional<Product> update(Long id, Product newProduct){
-        Optional<Product> optional = repo.findById(id);
-        if (optional.isEmpty()){
-            return Optional.empty();
-        }
-        Product productBd = optional.get();
+    public Optional<Product> update(Long id, Product newProduct,Long categoryId){
 
-        productBd.setName(newProduct.getName());
-        productBd.setPrice(newProduct.getPrice());
+
+
+        Product productBd = repo.findById(id).orElseThrow(
+            ()->
+            new ResourceNotFoundException("product not found"+
+            "with id"+id)
+        );
+
+        //if (optional.isEmpty()){
+           // return Optional.empty();
+        //}
+
+        Category category = repoCategory.findById(categoryId).orElseThrow(
+            ()->
+                 new ResourceNotFoundException("Category not found with id:"+
+                 categoryId
+                )
+        );
+        //Product productBd = optional.get();
+
+        productBd.setName(newProduct.getName()+"");
+        productBd.setPrice((double)newProduct.getPrice());
         productBd.setStock(newProduct.getStock());
+        productBd.setCategory(category);
         return Optional.of(repo.save(productBd));
     }
 
