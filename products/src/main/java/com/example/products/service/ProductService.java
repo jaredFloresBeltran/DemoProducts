@@ -1,6 +1,7 @@
 package com.example.products.service;
 
 import com.example.products.exception.ResourceNotFoundException;
+import com.example.products.exception.StockExeption;
 import com.example.products.model.Category;
 import com.example.products.model.Product;
 import com.example.products.repository.CategoryRepository;
@@ -40,7 +41,7 @@ public class ProductService {
         return repo.save(product);
     }
 
-    public Optional<Product> update(Long id, Product newProduct,Long categoryId){
+    public Product update(Long id, Product newProduct,Long categoryId){
 
 
 
@@ -66,7 +67,21 @@ public class ProductService {
         productBd.setPrice((double)newProduct.getPrice());
         productBd.setStock(newProduct.getStock());
         productBd.setCategory(category);
-        return Optional.of(repo.save(productBd));
+        return repo.save(productBd);
+    }
+
+    public Product applyDiscount(Long id, Double percentage) {
+        Product product = repo.findById(id).orElseThrow(
+            () -> new ResourceNotFoundException("product not found with id:" + id)
+        );
+
+        if (product.getStock() == 0) {
+            throw new StockExeption("discount does not apply when product stock is zero");
+        }
+
+        double discountedPrice = product.getPrice() * (1 - percentage / 100);
+        product.setPrice(discountedPrice);
+        return repo.save(product);
     }
 
     public boolean delete(Long id){
